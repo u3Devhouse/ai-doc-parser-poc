@@ -261,4 +261,4 @@ MAX_UPLOAD_MB=25
 | UI | Upload UI + `/admin` discovery approval |
 | Seeds | None; `_example.template.json` provided |
 
-See also: [POC_GUIDE.md](./POC_GUIDE.md), [DEVELOPER_GUIDE.en.md](./DEVELOPER_GUIDE.en.md).
+See also: [POC_GUIDE.md](./POC_GUIDE.md) / [POC_GUIDE.es.md](./POC_GUIDE.es.md), [DEVELOPER_GUIDE.en.md](./DEVELOPER_GUIDE.en.md) / [DEVELOPER_GUIDE.es.md](./DEVELOPER_GUIDE.es.md).

@@ -8,7 +8,7 @@ This guide explains how to implement the Document Extraction PoC for developers 
 |----------|---------|
 | [CONTEXT.md](../CONTEXT.md) | Domain glossary |
 | [MODELS_AND_REQUIREMENTS.md](./MODELS_AND_REQUIREMENTS.md) | Models, env vars, infra |
-| [POC_GUIDE.md](./POC_GUIDE.md) | End-to-end usage walkthrough |
+| [POC_GUIDE.md](./POC_GUIDE.md) / [POC_GUIDE.es.md](./POC_GUIDE.es.md) | End-to-end usage walkthrough (EN / ES) |
 | [PRD_DISCOVERY_SESSION.md](./PRD_DISCOVERY_SESSION.md) | Conversational Discovery Session PRD |
 | [DISCOVERY_SESSION_DESIGN.md](./DISCOVERY_SESSION_DESIGN.md) | Discovery Session design |
 

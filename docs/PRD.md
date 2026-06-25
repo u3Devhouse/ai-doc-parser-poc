@@ -218,7 +218,7 @@ Greenfield PoC — no existing tests. Follow patterns from Eve contract-review-a
 
 - Local implementation issues: [.local/issues/README.md](../.local/issues/README.md) (not pushed to remote).
 - Models and env vars: [MODELS_AND_REQUIREMENTS.md](./MODELS_AND_REQUIREMENTS.md).
-- Usage guide: [POC_GUIDE.md](./POC_GUIDE.md).
+- Usage guide: [POC_GUIDE.md](./POC_GUIDE.md) (English) / [POC_GUIDE.es.md](./POC_GUIDE.es.md) (Español).
 - Implementation guides: [DEVELOPER_GUIDE.en.md](./DEVELOPER_GUIDE.en.md), [DEVELOPER_GUIDE.es.md](./DEVELOPER_GUIDE.es.md).
 
 ### Testing seams — confirm with team

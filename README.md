@@ -12,7 +12,8 @@ Proof of concept for uploading document images/PDFs, discovering or applying ext
 | [docs/DISCOVERY_SESSION_DESIGN.md](./docs/DISCOVERY_SESSION_DESIGN.md) | Discovery Session design |
 | [docs/adr/](./docs/adr/) | Architecture decision records |
 | [docs/MODELS_AND_REQUIREMENTS.md](./docs/MODELS_AND_REQUIREMENTS.md) | Eve fit, models, infrastructure |
-| [docs/POC_GUIDE.md](./docs/POC_GUIDE.md) | Step-by-step usage guide |
+| [docs/POC_GUIDE.md](./docs/POC_GUIDE.md) | Step-by-step usage guide (English) |
+| [docs/POC_GUIDE.es.md](./docs/POC_GUIDE.es.md) | Guía de uso paso a paso (Español) |
 | [docs/DEVELOPER_GUIDE.en.md](./docs/DEVELOPER_GUIDE.en.md) | Developer implementation (English) |
 | [docs/DEVELOPER_GUIDE.es.md](./docs/DEVELOPER_GUIDE.es.md) | Guía de implementación (Español) |
 
@@ -44,7 +45,7 @@ pnpm install
 pnpm dev
 ```
 
-See [docs/POC_GUIDE.md](./docs/POC_GUIDE.md) for full instructions.
+See [docs/POC_GUIDE.md](./docs/POC_GUIDE.md) (English) or [docs/POC_GUIDE.es.md](./docs/POC_GUIDE.es.md) (Español) for full instructions.
 
 ## Security
 

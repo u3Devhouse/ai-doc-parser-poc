@@ -250,3 +250,5 @@ Upload received
 - Implementation details: [DEVELOPER_GUIDE.en.md](./DEVELOPER_GUIDE.en.md) (English) / [DEVELOPER_GUIDE.es.md](./DEVELOPER_GUIDE.es.md) (Español)
 - Models and infra: [MODELS_AND_REQUIREMENTS.md](./MODELS_AND_REQUIREMENTS.md)
 - Domain glossary: [CONTEXT.md](../CONTEXT.md)
+
+Spanish guide: [POC_GUIDE.es.md](./POC_GUIDE.es.md)

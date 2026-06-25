@@ -8,7 +8,7 @@ Esta guía explica cómo implementar el PoC de Extracción de Documentos para de
 |-----------|-----------|
 | [CONTEXT.md](../CONTEXT.md) | Glosario de dominio |
 | [MODELS_AND_REQUIREMENTS.md](./MODELS_AND_REQUIREMENTS.md) | Modelos, variables de entorno, infraestructura |
-| [POC_GUIDE.md](./POC_GUIDE.md) | Guía de uso paso a paso |
+| [POC_GUIDE.md](./POC_GUIDE.md) / [POC_GUIDE.es.md](./POC_GUIDE.es.md) | Guía de uso paso a paso (EN / ES) |
 | [PRD_DISCOVERY_SESSION.md](./PRD_DISCOVERY_SESSION.md) | PRD de Discovery Session conversacional |
 | [DISCOVERY_SESSION_DESIGN.md](./DISCOVERY_SESSION_DESIGN.md) | Diseño de Discovery Session |
 
@@ -23,7 +23,7 @@ cp .env.example .env.local
 pnpm dev
 ```
 
-Para un **scaffold nuevo** (ver [POC_GUIDE.md](./POC_GUIDE.md)):
+Para un **scaffold nuevo** (ver [POC_GUIDE.es.md](./POC_GUIDE.es.md)):
 
 ```bash
 npx eve@latest init document-extraction-poc --channel-web-nextjs
