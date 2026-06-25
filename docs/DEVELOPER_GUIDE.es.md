@@ -14,29 +14,117 @@ Esta guía explica cómo implementar el PoC de Extracción de Documentos para de
 
 ---
 
+## Inicio rápido
+
+```bash
+# Si clonas este repositorio (omitir init):
+pnpm install
+cp .env.example .env.local
+pnpm dev
+```
+
+Para un **scaffold nuevo** (ver [POC_GUIDE.md](./POC_GUIDE.md)):
+
+```bash
+npx eve@latest init document-extraction-poc --channel-web-nextjs
+cd document-extraction-poc
+pnpm install
+cp .env.example .env.local
+pnpm dev
+```
+
+| URL | Propósito |
+|-----|-----------|
+| `http://localhost:3000` | UI de carga |
+| `http://localhost:3000/admin` | Admin Discovery Session (requiere `ADMIN_API_KEY`) |
+
+**Desarrollo local sin clave Gateway:** mantener `AI_GATEWAY_MOCK=true` en `.env.local` (valor por defecto en `.env.example`). Para modelos reales: `AI_GATEWAY_MOCK=false` y `AI_GATEWAY_API_KEY`.
+
+```bash
+pnpm test        # pruebas de integración/unidad (modo mock)
+pnpm typecheck
+pnpm build
+```
+
+**Plantillas incluidas:** `identity/GT/dpi` (DPI Guatemala emparejado), `contract/nda`. Copiar [data/templates/_example.template.json](../data/templates/_example.template.json) para nuevos tipos.
+
+---
+
 ## Estructura del proyecto
 
 ```
 document-extraction-poc/
 ├── app/                             # Next.js 16 App Router
 │   ├── page.tsx                     # UI de carga
-│   ├── admin/
-│   │   └── page.tsx                 # UI admin (chat + resumen)
+│   ├── admin/page.tsx               # UI admin (chat + resumen)
+│   ├── layout.tsx
 │   └── api/
-│       ├── extract/route.ts
+│       ├── extract/route.ts         # POST extracción / redirección a descubrimiento
 │       └── discover/
-│           ├── route.ts
+│           ├── route.ts             # POST discover, GET listado
 │           └── [id]/
 │               ├── route.ts         # GET sesión, PATCH borrador
-│               ├── chat/route.ts    # Refinamiento conversacional
+│               ├── chat/route.ts    # Refinamiento conversacional en streaming
 │               ├── revise/route.ts  # Re-revisión del documento
 │               └── approve/route.ts
+├── agent/                           # Scaffold Eve (instrucciones, subagentes, herramientas)
+│   ├── agent.ts
+│   ├── instructions.md
+│   ├── channels/eve.ts              # Canal HTTP Eve + auth OIDC
+│   ├── subagents/                   # schema_discovery, document_extractor
+│   └── tools/                       # validate_match, extract_structured, save_template, …
+├── components/
+│   ├── admin/discovery-chat-panel.tsx
+│   └── ui/                          # Primitivos shadcn/ui
 ├── lib/
-│   ├── proposal-store.ts            # Persistencia de Discovery Session
+│   ├── template-store.ts            # Biblioteca de esquemas (`data/templates/`)
+│   ├── proposal-store.ts            # Sesiones Discovery (`data/proposals/`)
+│   ├── schema.ts                    # Constructores Zod (estricto + relajado)
+│   ├── extraction.ts                # Llamadas AI Gateway (clasificar, extraer, proponer)
+│   ├── extract-handler.ts           # Orquestación POST /api/extract
+│   ├── discover-handler.ts          # Handlers HTTP + chat de descubrimiento
 │   ├── discovery-schema-tools.ts    # Herramientas de mutación de esquema
-│   ├── discover-handler.ts          # Handlers HTTP de descubrimiento
-└── docs/
+│   ├── extraction-prompt.ts
+│   ├── pdf.ts                       # PDF → imágenes en memoria
+│   ├── upload.ts                    # Parseo multipart + validación
+│   ├── auth.ts                      # Verificación bearer ADMIN_API_KEY
+│   ├── ai-mock.ts                   # Mock determinista con AI_GATEWAY_MOCK=true
+│   ├── resolve-ai-overrides.ts
+│   ├── ai-route-errors.ts
+│   ├── api-client.ts
+│   └── types.ts
+├── data/
+│   ├── templates/                   # Solo biblioteca de esquemas persiste
+│   └── proposals/                   # Sesiones efímeras (se borran al aprobar)
+├── tests/                           # vitest
+├── docs/
+├── .env.example
+├── next.config.ts
+├── vercel.json
+└── package.json                     # pnpm; Node 24.x
 ```
+
+### Arquitectura en tiempo de ejecución (importante)
+
+Las rutas HTTP llaman a **handlers `lib/*` + Vercel AI SDK** (`generateObject`, `streamText`, `gateway()` de `@ai-sdk/gateway`) directamente — no al runtime del agente Eve. El árbol `agent/` es el **scaffold Eve** e documenta la orquestación prevista; el chat de descubrimiento y la extracción están en rutas API de Next.js según [ADR 0006](./adr/0006-conversational-discovery-with-ai-sdk.md).
+
+---
+
+## Variables de entorno
+
+Ver `.env.example`. Mínimo para desarrollo local:
+
+| Variable | Propósito |
+|----------|---------|
+| `AI_GATEWAY_MOCK` | `true` = sin API key; JSON mock determinista |
+| `AI_GATEWAY_API_KEY` | Clave Vercel AI Gateway (u OIDC en Vercel) |
+| `ADMIN_API_KEY` | Token bearer para `/admin` y `/api/discover/*` |
+| `EXTRACTION_PIPELINE` | `auto` (defecto), `single`, o `two-stage` |
+| `EXTRACTION_TWO_STAGE_FIELD_THRESHOLD` | Fuerza dos etapas si supera el umbral de campos (defecto 15) |
+| `TEMPLATE_STORE_PATH` | Raíz de biblioteca (defecto `data/templates`) |
+| `PROPOSAL_STORE_PATH` | Caché de sesiones (defecto `data/proposals`) |
+
+Modelos: `DISCOVERY_MODEL`, `EXTRACTION_MODEL`, `VISION_MODEL`, `STRUCTURE_MODEL`, `CLASSIFICATION_MODEL`. Lista completa: [MODELS_AND_REQUIREMENTS.md](./MODELS_AND_REQUIREMENTS.md).
 
 ---
 
@@ -104,7 +192,7 @@ Implementar exactamente como se define en `CONTEXT.md`:
 | `string[]` | `z.array(z.string())` |
 | `text` | `z.string()` |
 
-Construir esquemas Zod dinámicamente desde el JSON de plantilla. Usar `.describe()` con el campo `description` para mejorar la extracción.
+Construir esquemas Zod dinámicamente desde el JSON de plantilla. **Extracción** usa un esquema relajado (`buildRelaxedExtractionSchema`) con `z.unknown()` por campo para no enviar al modelo metadatos JSON Schema que parezcan propuestas de descubrimiento. La post-validación coacciona valores con `coerceExtractionData`. Los esquemas estrictos (`buildZodSchemaFromTemplate`) siguen disponibles para pruebas y herramientas.
 
 ---
 
@@ -245,7 +333,7 @@ export async function extractTwoStage(
 }
 ```
 
-Seleccionar pipeline mediante la variable de entorno `EXTRACTION_PIPELINE`.
+Seleccionar pipeline mediante `EXTRACTION_PIPELINE` (`single`, `two-stage`, o `auto`). Las plantillas **legal** y las que superan `EXTRACTION_TWO_STAGE_FIELD_THRESHOLD` campos (defecto 15) usan siempre extracción en dos etapas, incluso con `EXTRACTION_PIPELINE=single`. Los prompts de extracción listan nombres de campo como texto plano e incluyen un mensaje de sistema que prohíbe salida de propuesta de esquema. Si el modelo mezcla metadatos con valores, un paso de reparación elimina metadatos y conserva los valores extraídos.
 
 ---
 
@@ -281,7 +369,7 @@ export default defineAgent({
 
 ### Human-in-the-loop
 
-Usar la puerta de aprobación de Eve antes de ejecutar `save_template`. La UI admin llama al endpoint de aprobación con el token de continuación de la sesión Eve.
+**Implementación PoC:** La UI admin llama a `POST /api/discover/:id/approve` con el JSON del esquema editado. No se requiere token de continuación Eve — el estado vive en `proposal-store`. La herramienta Eve `save_template` y la puerta de aprobación siguen en `agent/` para `eve dev`; el flujo HTTP de producción usa la ruta approve.
 
 ---
 

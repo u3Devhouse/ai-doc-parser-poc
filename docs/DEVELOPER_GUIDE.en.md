@@ -14,16 +14,52 @@ This guide explains how to implement the Document Extraction PoC for developers 
 
 ---
 
+## Quick start
+
+```bash
+# If cloning this repo (skip init):
+pnpm install
+cp .env.example .env.local
+pnpm dev
+```
+
+For a **fresh scaffold** (see [POC_GUIDE.md](./POC_GUIDE.md)):
+
+```bash
+npx eve@latest init document-extraction-poc --channel-web-nextjs
+cd document-extraction-poc
+pnpm install
+cp .env.example .env.local
+pnpm dev
+```
+
+| URL | Purpose |
+|-----|---------|
+| `http://localhost:3000` | Upload UI |
+| `http://localhost:3000/admin` | Discovery Session admin (requires `ADMIN_API_KEY`) |
+
+**Local dev without a Gateway key:** keep `AI_GATEWAY_MOCK=true` in `.env.local` (default in `.env.example`). Set `AI_GATEWAY_MOCK=false` and `AI_GATEWAY_API_KEY` for real model calls.
+
+```bash
+pnpm test        # 62+ integration/unit tests (mock mode)
+pnpm typecheck
+pnpm build
+```
+
+**Shipped templates:** `identity/GT/dpi` (paired Guatemala DPI), `contract/nda`. Copy [data/templates/_example.template.json](../data/templates/_example.template.json) for new types.
+
+---
+
 ## Project structure
 
 ```
 document-extraction-poc/
 ├── app/                             # Next.js 16 App Router
 │   ├── page.tsx                     # Upload UI
-│   ├── admin/
-│   │   └── page.tsx                 # Schema administrator UI (chat + summary)
+│   ├── admin/page.tsx               # Schema administrator UI (chat + summary)
+│   ├── layout.tsx
 │   └── api/
-│       ├── extract/route.ts
+│       ├── extract/route.ts         # POST extraction / discovery redirect
 │       └── discover/
 │           ├── route.ts             # POST discover, GET list
 │           └── [id]/
@@ -31,12 +67,64 @@ document-extraction-poc/
 │               ├── chat/route.ts    # Streaming schema refinement
 │               ├── revise/route.ts  # Document re-review
 │               └── approve/route.ts
+├── agent/                           # Eve scaffold (instructions, subagents, tools)
+│   ├── agent.ts
+│   ├── instructions.md
+│   ├── channels/eve.ts              # Eve HTTP channel + OIDC auth
+│   ├── subagents/                   # schema_discovery, document_extractor
+│   └── tools/                       # validate_match, extract_structured, save_template, …
+├── components/
+│   ├── admin/discovery-chat-panel.tsx
+│   └── ui/                          # shadcn/ui primitives (button, card, input, …)
 ├── lib/
-│   ├── proposal-store.ts            # Discovery Session persistence
+│   ├── template-store.ts            # Schema library (`data/templates/`)
+│   ├── proposal-store.ts            # Discovery Session persistence (`data/proposals/`)
+│   ├── schema.ts                    # Zod builders (strict + relaxed extraction)
+│   ├── extraction.ts                # AI Gateway calls (classify, extract, propose)
+│   ├── extract-handler.ts           # POST /api/extract orchestration
+│   ├── discover-handler.ts          # Discovery HTTP handlers + chat
 │   ├── discovery-schema-tools.ts    # Chat schema mutation tools
-│   ├── discover-handler.ts          # Discovery HTTP handlers
-└── docs/
+│   ├── extraction-prompt.ts         # Field-aware extraction prompts
+│   ├── pdf.ts                       # In-memory PDF → page images
+│   ├── upload.ts                    # Multipart parse + validation
+│   ├── auth.ts                      # ADMIN_API_KEY bearer check
+│   ├── ai-mock.ts                   # Deterministic mock when AI_GATEWAY_MOCK=true
+│   ├── resolve-ai-overrides.ts      # Wires mock vs real Gateway
+│   ├── ai-route-errors.ts           # Gateway error → JSON responses
+│   ├── api-client.ts                # Admin UI fetch helpers
+│   └── types.ts
+├── data/
+│   ├── templates/                   # Persisted schema library only
+│   └── proposals/                   # Ephemeral discovery sessions (deleted on approve)
+├── tests/                           # vitest (API, extraction, paired identity, …)
+├── docs/
+├── .env.example
+├── next.config.ts
+├── vercel.json
+└── package.json                     # pnpm; Node 24.x
 ```
+
+### Runtime architecture (important)
+
+HTTP routes call **`lib/*` handlers + Vercel AI SDK** (`generateObject`, `streamText`, `gateway()` from `@ai-sdk/gateway`) directly — not the Eve agent runtime. The `agent/` tree is the **Eve scaffold** (`npx eve@latest init`) and documents intended orchestration; discovery chat and extraction are implemented in Next.js API routes per [ADR 0006](./adr/0006-conversational-discovery-with-ai-sdk.md). Eve subagents/tools remain available for `eve dev` or a future migration to Workflow-backed sessions.
+
+---
+
+## Environment variables
+
+See `.env.example`. Minimum for local dev:
+
+| Variable | Purpose |
+|----------|---------|
+| `AI_GATEWAY_MOCK` | `true` = no API key; deterministic mock JSON |
+| `AI_GATEWAY_API_KEY` | Vercel AI Gateway key (or OIDC on Vercel deploy) |
+| `ADMIN_API_KEY` | Bearer token for `/admin` and `/api/discover/*` |
+| `EXTRACTION_PIPELINE` | `auto` (default), `single`, or `two-stage` |
+| `EXTRACTION_TWO_STAGE_FIELD_THRESHOLD` | Force two-stage when field count exceeds threshold (default 15) |
+| `TEMPLATE_STORE_PATH` | Schema library root (default `data/templates`) |
+| `PROPOSAL_STORE_PATH` | Discovery session cache (default `data/proposals`) |
+
+Model overrides: `DISCOVERY_MODEL`, `EXTRACTION_MODEL`, `VISION_MODEL`, `STRUCTURE_MODEL`, `CLASSIFICATION_MODEL`. Full list: [MODELS_AND_REQUIREMENTS.md](./MODELS_AND_REQUIREMENTS.md).
 
 ---
 
@@ -281,7 +369,7 @@ export default defineAgent({
 
 ### Human-in-the-loop
 
-Use Eve approval gate before `save_template` executes. Admin UI calls approve endpoint with continuation token from Eve session stream.
+**PoC implementation:** Admin UI calls `POST /api/discover/:id/approve` with the edited schema JSON. No Eve continuation token is required — session state lives in `proposal-store`. The Eve `save_template` tool and approval gate remain in `agent/` for agents run via `eve dev`; production HTTP flow uses the approve route.
 
 ---
 
