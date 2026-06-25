@@ -1,0 +1,106 @@
+{
+  "$comment": "Copy this file, rename without leading underscore, and fill in values. Do not commit real PII.",
+  "templateKey": "contract/nda",
+  "category": "contract",
+  "version": 1,
+  "paired": false,
+  "description": "Example template for a non-disclosure agreement. Each document type must define its own fields.",
+  "sides": null,
+  "fields": [
+    {
+      "name": "disclosingParty",
+      "type": "string",
+      "required": false,
+      "description": "Legal name of the party disclosing confidential information"
+    },
+    {
+      "name": "receivingParty",
+      "type": "string",
+      "required": false,
+      "description": "Legal name of the party receiving confidential information"
+    },
+    {
+      "name": "effectiveDate",
+      "type": "date",
+      "required": false,
+      "description": "Agreement effective date in ISO 8601 format (YYYY-MM-DD)"
+    },
+    {
+      "name": "termMonths",
+      "type": "number",
+      "required": false,
+      "description": "Contract term length in months, if stated"
+    },
+    {
+      "name": "governingLaw",
+      "type": "string",
+      "required": false,
+      "description": "Jurisdiction or governing law clause"
+    },
+    {
+      "name": "confidentialitySummary",
+      "type": "text",
+      "required": false,
+      "description": "Short summary of confidentiality obligations"
+    },
+    {
+      "name": "signatoryNames",
+      "type": "string[]",
+      "required": false,
+      "description": "Names appearing above signature lines"
+    },
+    {
+      "name": "signaturePresent",
+      "type": "boolean",
+      "required": false,
+      "description": "Whether at least one signature appears to be present (metadata only; no image crops)"
+    }
+  ],
+  "_identityPairedExample": {
+    "templateKey": "identity/CO/national_id",
+    "category": "identity",
+    "version": 1,
+    "paired": true,
+    "description": "Example parent key for a paired identity document. Child side schemas live in sides.front and sides.back.",
+    "sides": {
+      "front": {
+        "fields": [
+          {
+            "name": "fullName",
+            "type": "string",
+            "required": false,
+            "description": "Full name as printed on the front of the document"
+          },
+          {
+            "name": "documentNumber",
+            "type": "string",
+            "required": false,
+            "description": "National identification number"
+          },
+          {
+            "name": "dateOfBirth",
+            "type": "date",
+            "required": false,
+            "description": "Date of birth (YYYY-MM-DD)"
+          }
+        ]
+      },
+      "back": {
+        "fields": [
+          {
+            "name": "address",
+            "type": "text",
+            "required": false,
+            "description": "Residential address if printed on the back"
+          },
+          {
+            "name": "bloodType",
+            "type": "string",
+            "required": false,
+            "description": "Blood type if present"
+          }
+        ]
+      }
+    }
+  }
+}

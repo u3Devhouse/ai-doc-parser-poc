@@ -1,0 +1,21 @@
+{
+  "templateKey": "contract/nda",
+  "category": "contract",
+  "version": 1,
+  "paired": false,
+  "description": "Local dev template for smoke tests (no PII)",
+  "fields": [
+    {
+      "name": "disclosingParty",
+      "type": "string",
+      "required": false,
+      "description": "Legal name of the disclosing party"
+    },
+    {
+      "name": "effectiveDate",
+      "type": "date",
+      "required": false,
+      "description": "Agreement effective date (YYYY-MM-DD)"
+    }
+  ]
+}

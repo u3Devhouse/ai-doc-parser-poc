@@ -1,0 +1,32 @@
+import { NextResponse } from "next/server";
+import { isAdminAuthorized } from "@/lib/auth";
+import { handleApprove } from "@/lib/discover-handler";
+import { aiErrorResponse } from "@/lib/ai-route-errors";
+import { resolveAiOverrides } from "@/lib/resolve-ai-overrides";
+import type { Template } from "@/lib/types";
+
+export async function POST(
+  request: Request,
+  context: { params: Promise<{ id: string }> },
+) {
+  if (!isAdminAuthorized(request.headers.get("authorization"))) {
+    return NextResponse.json(
+      { error: "unauthorized", message: "Admin API key required" },
+      { status: 401 },
+    );
+  }
+
+  const { id } = await context.params;
+  const body = (await request.json()) as { template?: Template; save?: boolean };
+
+  try {
+    const result = await handleApprove(id, body, resolveAiOverrides());
+    return NextResponse.json(result.body, { status: result.status });
+  } catch (error) {
+    const gatewayResponse = aiErrorResponse(error);
+    if (gatewayResponse) {
+      return gatewayResponse;
+    }
+    throw error;
+  }
+}

@@ -1,0 +1,83 @@
+{
+  "templateKey": "identity/GT/dpi",
+  "category": "identity",
+  "version": 1,
+  "paired": true,
+  "description": "Guatemala Documento Personal de Identificación (DPI). Upload front and back in one submission (two images or a 2-page PDF). Dates on the card use DDMMMYYYY (e.g. 15ENE1990); extraction returns YYYY-MM-DD.",
+  "sides": {
+    "front": {
+      "fields": [
+        {
+          "name": "cui",
+          "type": "string",
+          "required": false,
+          "description": "Código Único de Identificación (CUI): exactly 13 digits as printed on the front. Do not invent or truncate digits."
+        },
+        {
+          "name": "primer_apellido",
+          "type": "string",
+          "required": false,
+          "description": "Primer apellido exactly as printed on the front of the DPI"
+        },
+        {
+          "name": "segundo_apellido",
+          "type": "string",
+          "required": false,
+          "description": "Segundo apellido exactly as printed on the front (include even if blank on older cards)"
+        },
+        {
+          "name": "nombres",
+          "type": "string",
+          "required": false,
+          "description": "Nombres (given names) exactly as printed on the front, excluding apellidos"
+        },
+        {
+          "name": "fecha_nacimiento",
+          "type": "date",
+          "required": false,
+          "description": "Fecha de nacimiento. Source format is often DDMMMYYYY (e.g. 15ENE1990). Return YYYY-MM-DD."
+        },
+        {
+          "name": "nacionalidad",
+          "type": "string",
+          "required": false,
+          "description": "Nacionalidad impresa en el documento (p. ej. GUATEMALTECO/A)"
+        },
+        {
+          "name": "sexo",
+          "type": "string",
+          "required": false,
+          "description": "Sexo impreso en el frente (M o F)"
+        },
+        {
+          "name": "fecha_fotografia",
+          "type": "date",
+          "required": false,
+          "description": "Fecha en que se tomó la fotografía, impresa en el frente del DPI (no es fecha de vencimiento). Source format is often DDMMMYYYY (e.g. 15ENE2020). Return YYYY-MM-DD."
+        }
+      ]
+    },
+    "back": {
+      "fields": [
+        {
+          "name": "lugar_nacimiento",
+          "type": "string",
+          "required": false,
+          "description": "Municipio y departamento de nacimiento impresos en el reverso"
+        },
+        {
+          "name": "domicilio",
+          "type": "text",
+          "required": false,
+          "description": "Dirección de domicilio o vecindad impresa en el reverso"
+        },
+        {
+          "name": "fecha_vencimiento",
+          "type": "date",
+          "required": false,
+          "description": "Fecha de vencimiento del DPI impresa en el reverso. Source format is often DDMMMYYYY. Return YYYY-MM-DD."
+        }
+      ]
+    }
+  }
+}

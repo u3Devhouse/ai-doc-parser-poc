@@ -1,0 +1,32 @@
+# Local issue tracker — not pushed to remote
+.local/
+
+# Environment and secrets
+.env
+.env.local
+.env.*.local
+
+# Dependencies and build
+node_modules/
+.next/
+.vercel/
+dist/
+
+# Never commit real document samples
+data/samples/
+data/templates-test/
+data/templates-test-api/
+data/templates-test-two-stage/
+data/templates-test-extract/
+data/templates-test-discover/
+data/templates-test-integration/
+data/templates-test-local-mock/
+data/proposals/
+data/proposals-test/
+data/templates/**/*.json
+!data/templates/_example.template.json
+!data/templates/identity/GT/dpi.json
+!data/templates/contract/nda.json
+
+# OS
+.DS_Store
